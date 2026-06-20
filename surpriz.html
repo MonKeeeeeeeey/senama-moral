@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bir Dönemin Sonu: Gizemli Kütüphane Odası 📜</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Georgia', serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: #0d0203;
+            color: #f4ebd9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+            perspective: 1200px;
+        }
+
+        /* 3D KAPILARIN DIŞ KUTUSU */
+        #door-wrapper {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 100;
+            display: flex;
+            perspective: 1500px;
+            transition: visibility 1.5s;
+        }
+
+        /* 🏛️ MİSTİK VE GERÇEKÇİ KÜTÜPHANE ODASI TEMASI */
+        .library-door {
+            width: 50%;
+            height: 100%;
+            position: relative;
+            background: 
+                radial-gradient(circle at 50% 50%, rgba(56, 15, 19, 0.6) 0%, rgba(13, 2, 3, 0.95) 80%),
+                linear-gradient(rgba(13, 2, 3, 0.5), rgba(13, 2, 3, 0.7)),
+                repeating-linear-gradient(0deg, #150507 0px, #150507 140px, #2a0b0f 142px, #3d1015 146px, #150507 150px), 
+                repeating-linear-gradient(90deg, rgba(38, 11, 14, 0.3) 0px, rgba(38, 11, 14, 0.3) 70px, rgba(13, 2, 3, 0.5) 72px, rgba(13, 2, 3, 0.5) 75px);
+            box-shadow: inset 0 0 120px rgba(0,0,0,1);
+            transition: transform 1.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 1.6s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .door-left {
+            transform-origin: left center;
+            border-right: 5px solid #3d1419;
+            box-shadow: inset -10px 0 30px rgba(0,0,0,0.8), inset 0 0 120px rgba(0,0,0,1);
+        }
+
+        .door-right {
+            transform-origin: right center;
+            border-left: 5px solid #3d1419;
+            box-shadow: inset 10px 0 30px rgba(0,0,0,0.8), inset 0 0 120px rgba(0,0,0,1);
+        }
+
+        #door-wrapper.opened .door-left { transform: rotateY(-95deg); opacity: 0; }
+        #door-wrapper.opened .door-right { transform: rotateY(95deg); opacity: 0; }
+
+        .room-bg-decor {
+            position: absolute;
+            font-size: 15rem;
+            opacity: 0.03;
+            color: #fff;
+            pointer-events: none;
+            top: 20%;
+        }
+
+        .room-flower {
+            position: absolute;
+            font-size: 2.2rem;
+            opacity: 0.15;
+            filter: drop-shadow(0 0 12px rgba(255,255,255,0.3));
+            pointer-events: none;
+        }
+
+        /* MERKEZDEKİ BULMACA ELEMANLARI */
+        .absolute-center-content {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 40px 20px;
+            z-index: 105;
+            pointer-events: none;
+        }
+
+        .puzzle-header, .room-bookshelf, #password-container, .draggable-book { pointer-events: auto; }
+
+        .puzzle-header {
+            text-align: center;
+            max-width: 600px;
+            background: linear-gradient(135deg, rgba(27, 6, 9, 0.96) 0%, rgba(13, 2, 3, 0.98) 100%);
+            padding: 20px 35px;
+            border-radius: 8px;
+            border: 2px solid #6b1d25;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.9);
+        }
+
+        .puzzle-header h2 {
+            color: #d4af37;
+            font-size: 1.9rem;
+            margin-bottom: 12px;
+            font-weight: normal;
+        }
+
+        .puzzle-header p {
+            font-size: 1.05rem;
+            color: #bfa380;
+            line-height: 1.6;
+        }
+
+        .room-bookshelf {
+            width: 100%;
+            max-width: 540px;
+            background: #1a0608;
+            border: 12px solid #361014;
+            border-radius: 8px;
+            padding: 45px 25px 25px 25px;
+            box-shadow: 0 40px 80px rgba(0,0,0,1), inset 0 0 50px rgba(0,0,0,1);
+            position: relative;
+            margin-top: -10px;
+        }
+
+        .room-bookshelf::before {
+            content: "📜 KADİM CİLTLER RAFI 📜";
+            position: absolute;
+            top: -26px; left: 50%;
+            transform: translateX(-50%);
+            background: #361014;
+            color: #d4af37;
+            padding: 5px 30px;
+            font-size: 0.85rem;
+            letter-spacing: 4px;
+            border-radius: 4px;
+            border: 2px solid #521b21;
+        }
+
+        .slots-container {
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 22px;
+        }
+
+        .shelf-wood {
+            height: 20px;
+            background: linear-gradient(to bottom, #4a181e, #150305);
+            border-radius: 3px;
+            margin-top: 6px;
+        }
+
+        .book-slot {
+            width: 58px;
+            height: 100px;
+            border: 2px dashed #521b21;
+            background: rgba(5, 1, 2, 0.85);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #210609;
+            font-size: 1.4rem;
+        }
+
+        .draggable-book {
+            width: 54px;
+            height: 95px;
+            background-color: #6b111e;
+            border-left: 6px solid #d4af37;
+            border-radius: 3px;
+            cursor: grab;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #d4af37;
+            font-weight: bold;
+            font-size: 1.25rem;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.9), 0 0 15px rgba(212, 175, 55, 0.2);
+            position: absolute; 
+            z-index: 110;
+        }
+
+        .draggable-book[data-order="1"] { background: linear-gradient(to right, #4a121a, #5c1822); border-left-color: #c9a632; }
+        .draggable-book[data-order="2"] { background: linear-gradient(to right, #781824, #91202f); border-left-color: #fcd549; }
+        .draggable-book[data-order="3"] { background: linear-gradient(to right, #2b080d, #3d0d14); border-left-color: #a38020; }
+        .draggable-book[data-order="4"] { background: linear-gradient(to right, #57141d, #6e1b27); border-left-color: #ffe552; }
+
+        #password-container {
+            display: none;
+            width: 100%;
+            max-width: 410px;
+            text-align: center;
+            background: rgba(13, 2, 3, 0.96);
+            border-radius: 8px;
+        }
+
+        .password-box {
+            background: linear-gradient(145deg, #2b1115, #150507);
+            padding: 30px 25px;
+            border: 2px solid #d4af37;
+            border-radius: 6px;
+        }
+
+        .password-box input {
+            background: #0d0203;
+            border: 1px solid #6b111e;
+            color: #f4ebd9;
+            padding: 14px;
+            width: 100%;
+            margin-bottom: 18px;
+            text-align: center;
+            font-size: 1.15rem;
+            border-radius: 4px;
+        }
+
+        .password-box button, .puzzle-btn {
+            background: #6b111e;
+            color: #d4af37;
+            border: 1px solid #d4af37;
+            padding: 12px 35px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border-radius: 4px;
+        }
+
+        .password-box button:hover, .puzzle-btn:hover {
+            background: #d4af37;
+            color: #1a080a;
+            box-shadow: 0 0 20px #d4af37;
+        }
+
+        /* 2. AŞAMA: KİTAP SAYFALARI VE NAVİGASYON */
+        .main-container {
+            display: none;
+            opacity: 0;
+            transform: scale(0.92);
+            transition: opacity 1.3s ease, transform 1.3s ease;
+            max-width: 650px;
+            width: 100%;
+            z-index: 2;
+        }
+
+        .main-container.split-layout {
+            max-width: 1150px;
+        }
+
+        .book-layout-grid {
+            display: block;
+        }
+
+        .main-container.split-layout .book-layout-grid {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 40px;
+            align-items: start;
+        }
+
+        @media (max-width: 950px) {
+            .main-container.split-layout .book-layout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .book-nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: #523b24;
+            font-size: 1rem;
+            cursor: not-allowed;
+            padding: 5px 8px;
+            opacity: 0.4;
+            border-bottom: 1px solid transparent;
+        }
+
+        .nav-btn.unlocked { color: #a38560; cursor: pointer; opacity: 1; }
+        .nav-btn.active { color: #d4af37; border-bottom: 1px solid #d4af37; font-weight: bold; opacity: 1; }
+
+        .book-page {
+            background: linear-gradient(145deg, #2b1115 0%, #170709 100%);
+            border: 2px solid #421b21;
+            padding: 50px 40px;
+            border-radius: 6px;
+            box-shadow: 0 30px 65px rgba(0,0,0,0.9);
+            position: relative;
+            min-height: 520px;
+            display: none;
+        }
+
+        .book-page.active { display: flex; flex-direction: column; justify-content: center; }
+
+        .book-page::before {
+            content: "• 🤍 SANA ÖZEL BİR GÜNCE 🤍 •";
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #f4ebd9;
+            opacity: 0.35;
+            letter-spacing: 3px;
+            font-size: 0.75rem;
+        }
+
+        h1 {
+            color: #d4af37;
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: normal;
+            border-bottom: 1px solid #421b21;
+            padding-bottom: 15px;
+        }
+
+        p { line-height: 1.8; font-size: 1.1rem; color: #f4ebd9; text-indent: 30px; margin-bottom: 15px; text-align: justify; }
+        .signature { text-align: right; font-style: italic; color: #a38560; margin-top: 20px; }
+
+        /* 🎮 OYUN ALANLARI SÜSLEMELERİ */
+        .game-zone {
+            margin-top: 25px;
+            background: #150507;
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px dashed #6b111e;
+            text-align: center;
+        }
+
+        .game-zone h3 { color: #d4af37; font-size: 1.1rem; margin-bottom: 15px; font-weight: normal; }
+
+        /* OYUN 1: HAFIZA KARTLARI */
+        .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 280px; margin: 0 auto; }
+        .memory-card {
+            height: 65px; background: #3d1419; border: 1px solid #d4af37; border-radius: 4px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; color: transparent; transition: background 0.3s, color 0.3s;
+        }
+        .memory-card.flipped { background: #6b111e; color: #fff; }
+        .memory-card.matched { background: #234d20; color: #fff; cursor: default; border-color: #234d20; }
+
+        /* OYUN 2 & OYUN 4: KUTULAR */
+        .clicker-box { position: relative; width: 100%; height: 180px; background: #0d0203; border: 1px solid #3d1419; border-radius: 4px; overflow: hidden; margin-bottom: 15px; }
+        .catch-flower, .catch-falling-book { position: absolute; font-size: 2rem; cursor: pointer; }
+
+        /* OYUN 3: KİTAP AYRACI DURDURMA */
+        .slider-track { width: 100%; height: 24px; background: #0d0203; border: 2px solid #3d1419; border-radius: 12px; position: relative; margin: 20px 0; overflow: hidden; }
+        .slider-target { position: absolute; left: 45%; width: 10%; height: 100%; background: #234d20; opacity: 0.8; }
+        .slider-bookmark { position: absolute; left: 0; width: 16px; height: 100%; background: #d4af37; border-radius: 2px; box-shadow: 0 0 8px #d4af37; }
+
+        /* OYUN 5: ANTİKA ŞİFRE KİLİDİ */
+        .lock-container { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
+        .lock-dial { display: flex; flex-direction: column; align-items: center; background: #2b1115; padding: 10px; border: 1px solid #d4af37; border-radius: 4px; }
+        .lock-num { font-size: 1.8rem; color: #d4af37; margin: 5px 0; font-family: monospace; }
+        .lock-btn { background: #6b111e; color: #fff; border: none; padding: 4px 12px; cursor: pointer; font-size: 1rem; border-radius: 2px; }
+
+        /* LISTE SÜSLEMESİ */
+        .reading-list { list-style: none; margin: 20px 0; padding-left: 20px; }
+        .reading-list li { margin-bottom: 10px; font-size: 1.05rem; color: #f4ebd9; }
+
+        /* 🖼️ DUVARA ASILI NOSTALJİK ÇERÇEVE ALANI */
+        .wall-frame-container {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 1.2s ease-in-out forwards;
+        }
+
+        .antique-frame {
+            background: #1c0b0e;
+            padding: 16px;
+            border: 14px solid #b38f43;
+            border-image: linear-gradient(to bottom right, #d4af37 0%, #aa7c11 25%, #584107 50%, #aa7c11 75%, #d4af37 100%) 14;
+            box-shadow: 
+                0 0 0 4px #1a080a,
+                0 30px 60px rgba(0,0,0,0.95),
+                inset 0 0 20px rgba(0,0,0,0.8);
+            border-radius: 4px;
+            width: 100%;
+            max-width: 400px;
+            min-height: 480px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .antique-frame img {
+            width: 100%;
+            height: auto;
+            max-height: 580px;
+            object-fit: cover;
+            display: block;
+            border: 2px solid #0d0203;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        /* MÜHÜR VE MEKTUP */
+        .seal-container { text-align: center; margin-top: 30px; }
+        .wax-seal {
+            width: 85px; height: 85px; background: #6b111e; border-radius: 50%;
+            display: inline-flex; justify-content: center; align-items: center;
+            color: #d4af37; font-size: 2rem; cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6); border: 2px dashed #d4af37;
+            transition: transform 0.3s;
+        }
+        .wax-seal:hover { transform: scale(1.1) rotate(10deg); }
+        #secret-letter { display: none; margin-top: 25px; padding: 25px; background: #210c0f; border: 1px dashed #a38560; border-radius: 4px; }
+
+        .petal { position: fixed; pointer-events: none; animation: fall linear forwards; z-index: 150; }
+        @keyframes fall { 0% { transform: translateY(-5vh) rotate(0deg); opacity: 0.8; } 100% { transform: translateY(105vh) rotate(360deg); opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <!-- 1. AŞAMA: 3D KÜTÜPHANE KAPILARI -->
+    <div id="door-wrapper">
+        <div class="library-door door-left">
+            <div class="room-bg-decor" style="right: -50px;">⏳</div>
+            <div class="room-flower" style="top: 15%; left: 15%;">💮</div>
+            <div class="room-flower" style="bottom: 25%; left: 8%;">🤍</div>
+        </div>
+        <div class="library-door door-right">
+            <div class="room-bg-decor" style="left: -50px;">⏳</div>
+            <div class="room-flower" style="top: 20%; right: 12%;">🤍</div>
+            <div class="room-flower" style="bottom: 30%; right: 22%;">💮</div>
+        </div>
+
+        <div class="absolute-center-content" id="puzzle-layer">
+            <div class="puzzle-header">
+                <h2>Gizemli Kütüphane Odası 🏛️</h2>
+                <p id="puzzle-guide">Kütüphanenin loş raflarına dağılmış 4 kadim cildi senin için sakladım. Onları bulup ortadaki kilitli rafa sırasıyla (I-II-III-IV) yerleştirir misin sevgilim?</p>
+            </div>
+
+            <div class="room-bookshelf">
+                <div class="slots-container">
+                    <div class="book-slot" id="slot-1" data-expected="1" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+                    <div class="book-slot" id="slot-2" data-expected="2" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+                    <div class="book-slot" id="slot-3" data-expected="3" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+                    <div class="book-slot" id="slot-4" data-expected="4" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+                </div>
+                <div class="shelf-wood"></div>
+            </div>
+
+            <div class="draggable-book" id="b3" draggable="true" ondragstart="drag(event)" data-order="3">III</div>
+            <div class="draggable-book" id="b1" draggable="true" ondragstart="drag(event)" data-order="1">I</div>
+            <div class="draggable-book" id="b4" draggable="true" ondragstart="drag(event)" data-order="4">IV</div>
+            <div class="draggable-book" id="b2" draggable="true" ondragstart="drag(event)" data-order="2">II</div>
+
+            <div id="password-container">
+                <div class="password-box">
+                    <h3 style="color: #d4af37; margin-bottom: 10px;">Oda Mekanizmasını Çözdün ⚜</h3>
+                    <p style="font-size: 0.85rem; color: #a38560; margin-bottom: 15px;">Şimdi bu kapıları tamamen aralayacak, kalbimin sahibini belirten o kelimeyi gir:</p>
+                    <input type="password" id="password-input" placeholder="Anahtar kelime...">
+                    <button onclick="checkPassword()">Kapıyı Aç 📜</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. AŞAMA: KAPILAR AÇILINCA BELİRECEK KİTAP VE DUVAR -->
+    <div class="main-container" id="main-content">
+        
+        <div class="book-nav">
+            <button class="nav-btn unlocked active" id="btn1" onclick="switchSection(1)">Giriş</button>
+            <button class="nav-btn" id="btn2" onclick="switchSection(2)">Bölüm I</button>
+            <button class="nav-btn" id="btn3" onclick="switchSection(3)">Bölüm II</button>
+            <button class="nav-btn" id="btn4" onclick="switchSection(4)">Bölüm III</button>
+            <button class="nav-btn" id="btn5" onclick="switchSection(5)">Bölüm IV</button>
+            <button class="nav-btn" id="btn6" onclick="switchSection(6)">Bölüm V</button>
+            <button class="nav-btn" id="btn7" onclick="switchSection(7)">Son Söz</button>
+        </div>
+
+        <div class="book-layout-grid">
+            
+            <div class="book-pages-wrapper">
+                <!-- SAYFA 1: GİRİŞ -->
+                <div id="sec1" class="book-page active">
+                    <h1>Derin Bir Nefes Al Sevgilim</h1>
+                    <p>Aylardır omuzlarında taşıdığın o ağır YKS yükü, bugün itibariyle yerini derin bir sessizliğe ve tamamen hak ettiğin kocaman bir huzura bırakıyor. Yanında olamasam da her an aklımdaydın, kalbimdeydin.</p>
+                    <p>Şimdi masanın üzerindeki test kitaplarını yavaşça kenara itmeni, kalemin mürekkebini kurutmanı ve arkana yaslanıp rahatlamanı istiyorum. Bu büyük mücadele bitti ve sen gösterdiğin o dik, asil duruşunla benim gözümde her şeyin en güzelini şimdiden kazandın.</p>
+                    
+                    <div class="game-zone" id="zone-1">
+                        <h3>🎮 Bölüm I Kilidini Aç: Hafıza Eşleştirme Kartları</h3>
+                        <p style="font-size:0.85rem; color:#a38560; margin-bottom:12px;">Kartların üzerine dokun ve kütüphanemizin saklı emojilerini eşleştir sevgilim!</p>
+                        <div class="memory-grid" id="memory-board"></div>
+                    </div>
+                    <div class="signature">— Numan</div>
+                </div>
+
+                <!-- SAYFA 2: BÖLÜM I -->
+                <div id="sec2" class="book-page">
+                    <h1>Seninle Gurur Duyuyorum</h1>
+                    <p>Bir insanın bir amaç uğruna nasıl sessizce devleştiğini, o uykusuz gecelerde sayfaların arasında nasıl kaybolduğunu en yakından ben izledim, her adımına şahit oldum. Bu süreçte senin o pes etmeyen halini görmek benim için her şeyden çok daha kıymetliydi.</p>
+                    <p>Sen kendi hikayesini kendi kalemiyle yazan bir kahramansın sevgilim. Geleceğin hangi sayfayı açacağı hiç önemli değil; çünkü ben senin gideceğin her yolda, açacağın her yeni sayfada ne kadar çok parlayacağını zaten çok iyi biliyorum.</p>
+                    
+                    <div class="game-zone" id="zone-2">
+                        <h3>🎮 Bölüm II Kilidini Aç: Karanfil Yakalama</h3>
+                        <p style="font-size:0.85rem; color:#a38560; margin-bottom:10px;">Aşağıdaki kutuda aniden beliren <b style="color:#fff;">3 adet Beyaz Karanfili</b> tıklayarak yakalar mısın?</p>
+                        <div class="clicker-box" id="clicker-box"></div>
+                        <p id="click-score" style="font-size:0.9rem; color:#d4af37; text-align:center;">Yakalanan: 0 / 3</p>
+                    </div>
+                    <div class="signature">— En Büyük Hayranın</div>
+                </div>
+
+                <!-- SAYFA 3: BÖLÜM II -->
+                <div id="sec3" class="book-page">
+                    <h1>Zaman Artık Bizim</h1>
+                    <p>Kitaplar sadece kağıtlardan ibaret değildir derler ya, gerçekten de öyle. Her biri zamanı durdurabileceğimiz küçük evrenler bizim için. Sınav maratonu boyunca ertelediğin, okumak isteyip de vakit bulamadığın bütün o güzel satırlar şimdi seni bekliyor.</p>
+                    <p>Artık zamanın tek hakimi sensin sevgilim. Koşturmaca bitti, acelemiz yok; sayfaları istediğimiz gibi sindire sindire çevirebiliriz.</p>
+                    
+                    <div class="game-zone" id="zone-3">
+                        <h3>🎮 Bölüm III Kilidini Aç: Efsunlu Kitap Ayracı</h3>
+                        <p style="font-size:0.85rem; color:#a38560; margin-bottom:10px;">Sürekli hareket eden altın ayracı, tam ortadaki yeşil hedef alana denk geldiği an durdur sevgilim!</p>
+                        <div class="slider-track">
+                            <div class="slider-target"></div>
+                            <div class="slider-bookmark" id="bookmark-pin"></div>
+                        </div>
+                        <button class="puzzle-btn" onclick="stopBookmark()">Tam Burada Durdur!</button>
+                    </div>
+                    <div class="signature">— Sayfaların Arasından</div>
+                </div>
+
+                <!-- SAYFA 4: BÖLÜM III -->
+                <div id="sec4" class="book-page">
+                    <h1>Rüzgar Yön Değiştirdi</h1>
+                    <p>Fırtınalı günlerin ardından esen o tatlı, dingin serinliği hissetmeni istiyorum. Artık her sabah uyandığında çözmek zorunda olduğun paragraflar, stresle yetiştirmeye çalıştığın denemeler yok hayatında.</p>
+                    <p>Tamamen kendi özgür iradenle, kahveni yudumlarken keyifle altını çizeceğin o büyüleyici ve huzurlu cümleler var artık. Bunu sonuna kadar hak ettin.</p>
+                    
+                    <div class="game-zone" id="zone-4">
+                        <h3>🎮 Bölüm IV Kilidini Aç: Havada Uçuşan Kitaplar</h3>
+                        <p style="font-size:0.85rem; color:#a38560; margin-bottom:10px;">Aşağı düşen yaprakların arasından süzülen <b style="color:#fff;">3 adet Kitabı (📖)</b> havada yakala!</p>
+                        <div class="clicker-box" id="falling-box"></div>
+                        <p id="falling-score" style="font-size:0.9rem; color:#d4af37; text-align:center;">Yakalanan Kitap: 0 / 3</p>
+                    </div>
+                    <div class="signature">— Huzura Doğru</div>
+                </div>
+
+                <!-- SAYFA 5: BÖLÜM IV -->
+                <div id="sec5" class="book-page">
+                    <h1>Bu Yolu Birlikte Yürüdük</h1>
+                    <p>Büyük hedeflere giden yollar bazen çok karmaşık, loş koridorlardan geçebiliyor. Ama sen o koridorlarda yürürken ne yönünü kaybettin ne de içindeki o asil ışığı söndürmelerine izin verdin. Ben seninle gurur duydukça içim içime sığmıyor.</p>
+                    <p>Şimdi o uzun koridorun en parlak, en ferah çıkışındasın. Ve ben her zamanki gibi tam orada, senin hemen yanındayım.</p>
+                    
+                    <div class="game-zone" id="zone-5">
+                        <h3>🎮 Bölüm V Kilidini Aç: Antika Kilit Kombinasyonu</h3>
+                        <p style="font-size:0.85rem; color:#a38560; margin-bottom:12px;">Ok butonlarını kullanarak kilidi ikimiz için anlamlı olan o gizemli rakamlara ulaştır sevgilim: <b style="color:#d4af37;">"4 1 4"</b></p>
+                        <div class="lock-container">
+                            <div class="lock-dial">
+                                <button class="lock-btn" onclick="changeDial(0, 1)">▲</button>
+                                <div class="lock-num" id="d-0">0</div>
+                                <button class="lock-btn" onclick="changeDial(0, -1)">▼</button>
+                            </div>
+                            <div class="lock-dial">
+                                <button class="lock-btn" onclick="changeDial(1, 1)">▲</button>
+                                <div class="lock-num" id="d-1">0</div>
+                                <button class="lock-btn" onclick="changeDial(1, -1)">▼</button>
+                            </div>
+                            <div class="lock-dial">
+                                <button class="lock-btn" onclick="changeDial(2, 1)">▲</button>
+                                <div class="lock-num" id="d-2">0</div>
+                                <button class="lock-btn" onclick="changeDial(2, -1)">▼</button>
+                            </div>
+                        </div>
+                        <button class="puzzle-btn" onclick="verifyAntiqueLock()">Kilidi Döndür</button>
+                    </div>
+                    <div class="signature">— Kalbimin Anahtarı</div>
+                </div>
+
+                <!-- SAYFA 6: BÖLÜM V -->
+                <div id="sec6" class="book-page">
+                    <h1>Bizim Okuma Planımız</h1>
+                    <p>Bütün kilitleri tek tek açtığına göre sevgilim, artık o zorunlu paragraf günleri bizim için tamamen bitti! Önümüzdeki günlerde mis gibi kahve kokusuna eşlik edecek, tamamen keyfimize göre yapacağımız okuma listemizi şuraya bırakıyorum:</p>
+                    <ul class="reading-list">
+                        <li>☕ Yarım kalan o harika romanına kalındığı yerden devam etmek</li>
+                        <li>🌿 Kitapçıları gezip saatlerce yeni kitaplar incelemek</li>
+                        <li>📖 Sayfalarda altını çizeceğimiz yepyeni dünyalar keşfetmek</li>
+                        <li>💭 Akşamları üzerine uzun uzun konuşacağımız hikayeler biriktirmek</li>
+                    </ul>
+                    <p style="text-align:center; margin-top:25px; font-size:0.95rem; color:#d4af37;">Harikasın sevgilim, artık "Son Söz" sayfasına geçmeye tamamen hak kazandın!</p>
+                    <div class="signature">— Ortak Geleceğimiz</div>
+                </div>
+
+                <!-- SAYFA 7: SON SÖZ -->
+                <div id="sec7" class="book-page">
+                    <h1>Benim Mühürlü Sözüm</h1>
+                    <p>Her güzel hikayenin sonunda okuyucuya bırakılan çok özel bir his, unutulmaz bir satır arası vardır. Ben de bu dijital güncenin son sayfasında senin için mühürlenmiş gizli bir söz bırakmak istedim.</p>
+                    <p>Bu zorlu dönemi büyük bir sabırla atlatan kraliçeme benden küçük bir YKS hatırası... Aşağıdaki mührü kırarak sözümü okuyabilirsin sevgilim.</p>
+                    
+                    <div class="seal-container">
+                        <div class="wax-seal" onclick="breakSeal()">⚜</div>
+                    </div>
+
+                    <div id="secret-letter">
+                        "Değerli kitap grubumuzun en özel üyesi, canım sevgilim... Ait olduğun yere, kitap grubumuza tekrardan hoş geldin. Artık o yorucu günleri geride bıraktık; şimdi seninle birlikte sayfalarında kaybolacağımız o güzel kitapları düşünme zamanı. Bu zorlu yolda gösterdiğin sabırla ve başarınla seninle gurur duyuyorum kitap grubumun kraliçesi. Seni çok seviyorum. ❤️"
+                    </div>
+                </div>
+            </div>
+
+            <!-- SAĞ TARAF: ANTİKA ÇERÇEVELİ FOTOĞRAF DUVARI -->
+            <div class="wall-frame-container" id="photo-wall">
+                <div class="antique-frame">
+                    <img src="Screenshot_5.png" alt="Sena ve Özlem Abla Fotoğrafı">
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script {nonce}>
+        window.onload = function() {
+            const books = document.querySelectorAll('.draggable-book');
+            const shelfLevels = [20, 44, 66, 82]; 
+            books.forEach((book, index) => {
+                book.style.left = (Math.random() * 68 + 10) + 'vw';
+                book.style.top = shelfLevels[index % shelfLevels.length] + 'vh';
+                book.style.transform = `rotate(${(Math.random() * 16) - 8}deg)`;
+            });
+            setupMemoryGame();
+        };
+
+        function allowDrop(ev) { ev.preventDefault(); }
+        function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+        function drop(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData("text");
+            const draggedElement = document.getElementById(data);
+            const targetSlot = ev.target;
+            if (targetSlot.classList.contains('book-slot') && targetSlot.getAttribute('data-expected') === draggedElement.getAttribute('data-order')) {
+                targetSlot.appendChild(draggedElement);
+                draggedElement.style.position = 'static'; 
+                draggedElement.style.transform = 'none'; 
+                draggedElement.setAttribute('draggable', 'false');
+                checkShelfSuccess();
+            }
+        }
+        function checkShelfSuccess() {
+            if (document.querySelectorAll('.book-slot .draggable-book').length === 4) {
+                document.getElementById('password-container').style.display = "block";
+            }
+        }
+
+        function checkPassword() {
+            if(document.getElementById('password-input').value.toLowerCase().trim() === 'sevgilim') {
+                document.getElementById('puzzle-layer').style.opacity = '0';
+                document.getElementById('door-wrapper').classList.add('opened');
+                setTimeout(() => {
+                    document.getElementById('door-wrapper').style.visibility = 'hidden';
+                    const mc = document.getElementById('main-content');
+                    mc.style.display = 'block';
+                    setTimeout(() => { mc.style.opacity = '1'; mc.style.transform = 'scale(1)'; }, 50);
+                    startFlowerAndLeafEffect();
+                }, 1600);
+            } else { alert('Hatalı kelime girdin sevgilim...'); }
+        }
+
+        const emojis = ['📖', '☕', '📖', '☕'];
+        let flippedCards = [];
+        let matchedCount = 0;
+        function setupMemoryGame() {
+            const board = document.getElementById('memory-board');
+            emojis.sort(() => 0.5 - Math.random());
+            for(let i=0; i<4; i++) {
+                const card = document.createElement('div');
+                card.classList.add('memory-card');
+                card.dataset.value = emojis[i];
+                card.innerText = emojis[i];
+                card.onclick = flipCard;
+                board.appendChild(card);
+            }
+        }
+        function flipCard() {
+            if (flippedCards.length < 2 && !this.classList.contains('flipped') && !this.classList.contains('matched')) {
+                this.classList.add('flipped');
+                flippedCards.push(this);
+                if (flippedCards.length === 2) { setTimeout(checkMatch, 600); }
+            }
+        }
+        function checkMatch() {
+            if(flippedCards[0].dataset.value === flippedCards[1].dataset.value) {
+                flippedCards[0].classList.add('matched');
+                flippedCards[1].classList.add('matched');
+                matchedCount += 2;
+                if(matchedCount === 4) {
+                    document.getElementById('btn2').classList.add('unlocked');
+                    document.getElementById('zone-1').innerHTML = "<p style='color:#d4af37; text-align:center;'>✨ Harikasın sevgilim! Bölüm I açıldı.</p>";
+                }
+            } else {
+                flippedCards[0].classList.remove('flipped');
+                flippedCards[1].classList.remove('flipped');
+            }
+            flippedCards = [];
+        }
+
+        let flowerScore = 0;
+        function spawnFlower() {
+            if(flowerScore >= 3 || document.getElementById('sec2').style.display === 'none') return;
+            const box = document.getElementById('clicker-box');
+            box.innerHTML = '';
+            const flower = document.createElement('div');
+            flower.classList.add('catch-flower');
+            flower.innerText = Math.random() > 0.5 ? '💮' : '🤍';
+            flower.style.left = Math.random() * (box.clientWidth - 40) + 'px';
+            flower.style.top = Math.random() * (box.clientHeight - 40) + 'px';
+            flower.onclick = function() {
+                flowerScore++;
+                document.getElementById('click-score').innerText = `Yakalanan: ${flowerScore} / 3`;
+                box.innerHTML = '';
+                if(flowerScore >= 3) {
+                    document.getElementById('btn3').classList.add('unlocked');
+                    document.getElementById('zone-2').innerHTML = "<p style='color:#d4af37; text-align:center;'>✨ Süpersin! Bölüm II açıldı sevgilim.</p>";
+                } else { setTimeout(spawnFlower, 400); }
+            };
+            box.appendChild(flower);
+        }
+
+        let bookmarkPos = 0;
+        let bookmarkDirection = 2;
+        let bookmarkInterval;
+        function startBookmarkSlider() {
+            clearInterval(bookmarkInterval);
+            const pin = document.getElementById('bookmark-pin');
+            bookmarkInterval = setInterval(() => {
+                bookmarkPos += bookmarkDirection;
+                if(bookmarkPos >= 95 || bookmarkPos <= 0) { bookmarkDirection *= -1; }
+                pin.style.left = bookmarkPos + '%';
+            }, 20);
+        }
+        function stopBookmark() {
+            clearInterval(bookmarkInterval);
+            if(bookmarkPos >= 43 && bookmarkPos <= 55) {
+                document.getElementById('btn4').classList.add('unlocked');
+                document.getElementById('zone-3').innerHTML = "<p style='color:#d4af37; text-align:center;'>✨ Tam yerine oturttun! Bölüm III açıldı sevgilim.</p>";
+            } else {
+                alert("Küçük bir farkla kaçırdın sevgilim, ayraç dışarıda kaldı. Tekrar dene!");
+                startBookmarkSlider();
+            }
+        }
+
+        let fallingScore = 0;
+        let fallingInterval;
+        function startFallingBooks() {
+            const box = document.getElementById('falling-box');
+            fallingInterval = setInterval(() => {
+                if(fallingScore >= 3) { clearInterval(fallingInterval); return; }
+                const item = document.createElement('div');
+                item.classList.add('catch-falling-book');
+                const isBook = Math.random() > 0.4;
+                item.innerText = isBook ? '📖' : (Math.random() > 0.5 ? '🍂' : '💮');
+                item.style.left = Math.random() * (box.clientWidth - 30) + 'px';
+                item.style.top = '0px';
+                box.appendChild(item);
+
+                let currentY = 0;
+                let itemTimer = setInterval(() => {
+                    currentY += 3;
+                    item.style.top = currentY + 'px';
+                    if(currentY > box.clientHeight - 30) {
+                        clearInterval(itemTimer);
+                        item.remove();
+                    }
+                }, 20);
+
+                item.onclick = function() {
+                    if(isBook) {
+                        fallingScore++;
+                        document.getElementById('falling-score').innerText = `Yakalanan Kitap: ${fallingScore} / 3`;
+                        if(fallingScore >= 3) {
+                            document.getElementById('btn5').classList.add('unlocked');
+                            document.getElementById('zone-4').innerHTML = "<p style='color:#d4af37; text-align:center;'>✨ Kitapları yakaladın! Bölüm IV kilidi açıldı.</p>";
+                            clearInterval(fallingInterval);
+                        }
+                    }
+                    clearInterval(itemTimer);
+                    item.remove();
+                };
+            }, 1000);
+        }
+
+        let lockValues = [0, 0, 0];
+        function changeDial(index, val) {
+            lockValues[index] = (lockValues[index] + val + 10) % 10;
+            document.getElementById(`d-${index}`).innerText = lockValues[index];
+        }
+        function verifyAntiqueLock() {
+            if(lockValues[0] === 4 && lockValues[1] === 1 && lockValues[2] === 4) {
+                document.getElementById('btn6').classList.add('unlocked');
+                document.getElementById('btn7').classList.add('unlocked');
+                document.getElementById('zone-5').innerHTML = "<p style='color:#d4af37; text-align:center;'>✨ Şifre kabul edildi! Bölüm V ve Son Söz sayfaları açıldı.</p>";
+            } else {
+                alert("Antika kilit tıkırdadı ama açılmadı... Doğru rakamları bulmalısın sevgilim.");
+            }
+        }
+
+        function switchSection(secNumber) {
+            const targetBtn = document.getElementById('btn' + secNumber);
+            if (!targetBtn.classList.contains('unlocked')) {
+                alert("Bu sayfa henüz kilitli sevgilim! Önce mevcut bölümdeki oyunu çözmelisin. 😉");
+                return;
+            }
+            document.querySelectorAll('.book-page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('sec' + secNumber).classList.add('active');
+            targetBtn.classList.add('active');
+            
+            const mc = document.getElementById('main-content');
+            const photoWall = document.getElementById('photo-wall');
+
+            if(secNumber === 7) {
+                mc.classList.add('split-layout');
+                photoWall.style.display = 'flex';
+            } else {
+                mc.classList.remove('split-layout');
+                photoWall.style.display = 'none';
+            }
+
+            if(secNumber === 2 && flowerScore < 3) { setTimeout(spawnFlower, 500); }
+            if(secNumber === 3) { startBookmarkSlider(); } else { clearInterval(bookmarkInterval); }
+            if(secNumber === 4 && fallingScore < 3) { startFallingBooks(); } else { clearInterval(fallingInterval); }
+        }
+
+        function breakSeal() {
+            document.querySelector('.wax-seal').style.background = '#421b21';
+            document.getElementById('secret-letter').style.display = 'block';
+        }
+
+        function startFlowerAndLeafEffect() {
+            const items = ['💮', '🤍', '🍂', '🌹']; 
+            setInterval(() => {
+                const petal = document.createElement('div');
+                petal.classList.add('petal');
+                petal.style.left = Math.random() * 100 + 'vw';
+                petal.style.top = '-5vh';
+                petal.style.fontSize = Math.random() * 20 + 15 + 'px';
+                petal.innerText = items[Math.floor(Math.random() * items.length)];
+                const duration = Math.random() * 4 + 4;
+                petal.style.animationDuration = duration + 's';
+                document.body.appendChild(petal);
+                setTimeout(() => petal.remove(), duration * 1000);
+            }, 600);
+        }
+    </script>
+</body>
+</html>
